@@ -103,6 +103,18 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* v1.1.1：输入框空内容时的"抖动 + 红框"提示 */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    #todo-input.error {
+      border-color: #ff6b6b;
+      animation: shake 0.3s;
+    }
+
     .todo-text {
       color: #333;
       font-size: 15px;
@@ -165,7 +177,7 @@
     <!-- 待办列表：由 JS 动态生成 -->
     <ul id="todo-list"></ul>
 
-    <p class="version">v1.1.0</p>
+    <p class="version">v1.1.1</p>
   </div>
 
   <script>
@@ -182,7 +194,11 @@
     function addTodo() {
       const text = input.value.trim();  // 去掉首尾空格
       if (text === '') {
-        return;  // 空的就不添加（v1.1.1 会给出更友好的提示）
+        // v1.1.1：空输入时抖动+红框提示
+        input.classList.add('error');
+        input.placeholder = '请先输入内容再添加哦～';
+        setTimeout(() => input.classList.remove('error'), 300);
+        return;
       }
       todos.push({ text: text, done: false });  // 新待办默认未完成
       input.value = '';   // 清空输入框
