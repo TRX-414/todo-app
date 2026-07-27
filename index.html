@@ -108,6 +108,14 @@
       font-size: 15px;
       word-break: break-all;
       margin-right: 12px;
+      cursor: pointer;        /* v1.1.0：提示文字可点击 */
+      user-select: none;
+    }
+
+    /* v1.1.0：已完成的待办——划线 + 变灰 */
+    .todo-text.done {
+      text-decoration: line-through;
+      color: #bbb;
     }
 
     .delete-btn {
@@ -146,7 +154,7 @@
 <body>
   <div class="container">
     <h1>📝 我的待办清单</h1>
-    <p class="subtitle">今天要做点什么呢？</p>
+    <p class="subtitle">点击文字可标记完成 · 今天要做点什么呢？</p>
 
     <!-- 输入区：输入框 + 添加按钮 -->
     <div class="input-area">
@@ -157,7 +165,7 @@
     <!-- 待办列表：由 JS 动态生成 -->
     <ul id="todo-list"></ul>
 
-    <p class="version">v1.0.0</p>
+    <p class="version">v1.1.0</p>
   </div>
 
   <script>
@@ -167,6 +175,7 @@
     const list = document.getElementById('todo-list');
 
     // ===== 用一个数组保存所有待办 =====
+    // v1.1.0：每条待办从"纯文本"升级为对象 { text, done }，done 表示是否已完成
     let todos = [];
 
     // ===== 添加一条待办 =====
@@ -175,7 +184,7 @@
       if (text === '') {
         return;  // 空的就不添加（v1.1.1 会给出更友好的提示）
       }
-      todos.push(text);   // 存进数组
+      todos.push({ text: text, done: false });  // 新待办默认未完成
       input.value = '';   // 清空输入框
       render();           // 重新渲染列表
     }
@@ -183,6 +192,12 @@
     // ===== 删除一条待办 =====
     function deleteTodo(index) {
       todos.splice(index, 1);  // 从数组里移除第 index 条
+      render();
+    }
+
+    // ===== 切换某条待办的"完成"状态（v1.1.0 新增） =====
+    function toggleTodo(index) {
+      todos[index].done = !todos[index].done;  // 完成⇄未完成 来回切
       render();
     }
 
@@ -195,13 +210,18 @@
         return;
       }
 
-      todos.forEach((text, index) => {
+      todos.forEach((todo, index) => {
         const li = document.createElement('li');
         li.className = 'todo-item';
 
         const span = document.createElement('span');
         span.className = 'todo-text';
-        span.textContent = text;  // 用 textContent 避免 XSS
+        span.textContent = todo.text;  // 用 textContent 避免 XSS
+        // v1.1.0：已完成的加上 done 样式（划线 + 变灰），点击文字可切换状态
+        if (todo.done) {
+          span.classList.add('done');
+        }
+        span.onclick = () => toggleTodo(index);
 
         const btn = document.createElement('button');
         btn.className = 'delete-btn';
